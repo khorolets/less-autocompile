@@ -35,7 +35,7 @@ class ExampleCommand(sublime_plugin.EventListener):
     def on_post_save(self, view):
         if view.file_name().split('.')[-1].lower() == 'less':
             regions_of_keywords = view.find_all(
-                    r"(out|sourcemap|compress|main):\s(.+)", sublime.IGNORECASE
+                    r"(out|sourcemap|compress|main):\s(.+css|.+less|true|false)", sublime.IGNORECASE
                 )
             parameters = {}
             for region in regions_of_keywords:
@@ -43,6 +43,7 @@ class ExampleCommand(sublime_plugin.EventListener):
                 parameters.update(
                         {text.split(':')[0].strip(): self._parse_parameter_value(text.split(':')[1].strip())}
                     )
+            print(parameters)
             if parameters:
                 main_file = None
                 if 'main' in parameters:
@@ -76,7 +77,8 @@ class ExampleCommand(sublime_plugin.EventListener):
                 main_file_content = f.read()
 
                 match = re.findall(
-                        r"(out|sourcemap|compress|main):\s(.+)", main_file_content
+                        r"(out|sourcemap|compress|main):\s(.+css|.+less|true|false)",
+                        main_file_content
                     )
                 if match:
                     # print(match)
