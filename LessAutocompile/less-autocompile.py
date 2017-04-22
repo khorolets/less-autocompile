@@ -3,6 +3,8 @@ import sublime_plugin
 
 import os
 import re
+import subprocess
+
 
 BOOLEAN_MAP = {'true': True, 'false': False, '1': True, '0': False}
 
@@ -101,11 +103,33 @@ class ExampleCommand(sublime_plugin.EventListener):
                 os.path.dirname(file_name),
                 out
             )
-        os.system(
-                "lessc {source} {destination} {compress} {sourcemap}".format(
+        print("lessc {source} {destination} {compress} {sourcemap}".format(
                         source=file_name,
                         destination=destination,
-                        compress='--compress' if compress else '',
+                        compress='--clean-css' if compress else '',
                         sourcemap='--source-map' if sourcemap else ''
-                    )
-            )
+                    ))
+
+        env = os.environ.copy()
+        if sublime.platform() == 'osx':
+            env['PATH'] = env['PATH'] + ':/usr/local/bin'
+
+        print(env['PATH'])
+        proc = subprocess.Popen(
+            [
+                "lessc",
+                str(file_name),
+                str(destination),
+                '--clean-css' if compress else '',
+                '--source-map' if sourcemap else ''
+            ],
+            env=env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        out, err = proc.communicate()
+        if err:
+            error = err.decode('utf-8')
+            error = re.sub("(\[\d+m)","", error)
+            sublime.error_message(error)
