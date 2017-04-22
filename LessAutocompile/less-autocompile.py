@@ -59,11 +59,9 @@ class ExampleCommand(sublime_plugin.EventListener):
                                     parameters['main']
                                 )
                         )
-                    # print(parameters)
                 self._compile(
                         main_file or view.file_name(), **parameters
                     )
-            # print(view.file_name(), "just got saved")
 
     def _get_parameters_from_main_file(self, file_name):
         """
@@ -83,7 +81,6 @@ class ExampleCommand(sublime_plugin.EventListener):
                         main_file_content
                     )
                 if match:
-                    # print(match)
                     return dict(
                             zip(
                                     [m[0] for m in match],
@@ -103,18 +100,15 @@ class ExampleCommand(sublime_plugin.EventListener):
                 os.path.dirname(file_name),
                 out
             )
-        print("lessc {source} {destination} {compress} {sourcemap}".format(
-                        source=file_name,
-                        destination=destination,
-                        compress='--clean-css' if compress else '',
-                        sourcemap='--source-map' if sourcemap else ''
-                    ))
 
         env = os.environ.copy()
         if sublime.platform() == 'osx':
-            env['PATH'] = env['PATH'] + ':/usr/local/bin'
+            env['PATH'] += ':/usr/local/bin'
+        elif sublime.platform() == 'windows':
+            env['PATH'] += ';%s\AppData\Roaming\\npm' % os.path.expanduser("~")
+        else:
+            env['PATH'] += ':/usr/bin'
 
-        print(env['PATH'])
         proc = subprocess.Popen(
             [
                 "lessc",
@@ -126,7 +120,8 @@ class ExampleCommand(sublime_plugin.EventListener):
             env=env,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            shell=True
         )
         out, err = proc.communicate()
         if err:
