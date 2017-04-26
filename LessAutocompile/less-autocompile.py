@@ -109,6 +109,15 @@ class ExampleCommand(sublime_plugin.EventListener):
         else:
             env['PATH'] += ':/usr/bin'
 
+        print(
+            " ".join([
+                "lessc",
+                str(file_name),
+                str(destination),
+                '--clean-css' if compress else '',
+                '--source-map' if sourcemap else ''
+            ])
+        )
         proc = subprocess.Popen(
             [
                 "lessc",
@@ -121,7 +130,7 @@ class ExampleCommand(sublime_plugin.EventListener):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            shell=True
+            shell=True if sublime.platform() == 'windows' else False
         )
         out, err = proc.communicate()
         if err:
